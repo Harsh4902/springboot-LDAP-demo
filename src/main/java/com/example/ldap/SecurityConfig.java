@@ -2,7 +2,9 @@ package com.example.ldap;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.support.BaseLdapPathContextSource;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,19 +21,28 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+//  @Bean
+//  public EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean() {
+//    EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean =
+//      EmbeddedLdapServerContextSourceFactoryBean.fromEmbeddedLdapServer();
+//    contextSourceFactoryBean.setPort(0);
+//    return contextSourceFactoryBean;
+//  }
   @Bean
-  public EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean() {
-    EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean =
-      EmbeddedLdapServerContextSourceFactoryBean.fromEmbeddedLdapServer();
-    contextSourceFactoryBean.setPort(0);
-    return contextSourceFactoryBean;
+  public ContextSource contextSource(){
+    LdapContextSource ldapContextSource = new LdapContextSource();
+    ldapContextSource.setUrl("ldap://localhost:8389");
+    ldapContextSource.setBase("dc=example,dc=org");
+    ldapContextSource.setUserDn("cn=admin,dc=example,dc=org");
+    ldapContextSource.setPassword("admin");
+    return ldapContextSource;
   }
 
-  @Bean
-  UnboundIdContainer ldapContainer() {
-    return new UnboundIdContainer("dc=springframework,dc=org",
-      "classpath:users.ldif");
-  }
+//  @Bean
+//  UnboundIdContainer ldapContainer() {
+//    return new UnboundIdContainer("dc=springframework,dc=org",
+//      "classpath:users.ldif");
+//  }
 
   @Bean
   LdapAuthoritiesPopulator authorities(BaseLdapPathContextSource contextSource) {
@@ -56,7 +67,12 @@ public class SecurityConfig {
 
     httpSecurity
       .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry.anyRequest().authenticated())
-      .formLogin(t -> {});
+      .formLogin(t -> {
+        t.successHandler((request, response, authentication) -> {
+          System.out.println(authentication.getPrincipal());
+          response.sendRedirect("/");
+        });
+      });
     return httpSecurity.build();
   }
 }

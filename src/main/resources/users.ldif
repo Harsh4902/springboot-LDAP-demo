@@ -26,7 +26,7 @@ objectclass: inetOrgPerson
 cn: Dianne Emu
 sn: Emu
 uid: user
-userPassword: password
+userPassword: $2a$12$fsaVn/obzZgO0ZPNciU7Me1l53ojYvzk.b7LYe8Kj5tuyrWfKUuf2
 
 dn: cn=user,ou=groups,dc=springframework,dc=org
 objectclass: top
