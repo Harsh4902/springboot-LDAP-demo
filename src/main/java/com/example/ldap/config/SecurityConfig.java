@@ -1,4 +1,4 @@
-package com.example.ldap;
+package com.example.ldap.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,13 +28,14 @@ public class SecurityConfig {
 //    contextSourceFactoryBean.setPort(0);
 //    return contextSourceFactoryBean;
 //  }
+
   @Bean
   public ContextSource contextSource(){
-    LdapContextSource ldapContextSource = new LdapContextSource();
-    ldapContextSource.setUrl("ldap://localhost:8389");
-    ldapContextSource.setBase("dc=example,dc=org");
-    ldapContextSource.setUserDn("cn=admin,dc=example,dc=org");
-    ldapContextSource.setPassword("admin");
+    LdapContextSource ldapContextSource = new LdapContextSource() ;
+    ldapContextSource.setUrl("ldap://192.168.12.55:389");
+    ldapContextSource.setBase("dc=example,dc=com");
+    ldapContextSource.setUserDn("cn=admin,dc=example,dc=com");
+    ldapContextSource.setPassword("sttl@321");
     return ldapContextSource;
   }
 
@@ -57,7 +58,7 @@ public class SecurityConfig {
   AuthenticationManager authenticationManager(BaseLdapPathContextSource contextSource,
                                               LdapAuthoritiesPopulator authorities) {
     LdapPasswordComparisonAuthenticationManagerFactory factory = new LdapPasswordComparisonAuthenticationManagerFactory(contextSource,new BCryptPasswordEncoder());
-    factory.setUserDnPatterns("uid={0},ou=people");
+    factory.setUserDnPatterns("uid={0}");
     factory.setPasswordAttribute("userPassword");
     return factory.createAuthenticationManager();
   }
@@ -66,9 +67,15 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
     httpSecurity
-      .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry.anyRequest().authenticated())
+      .csrf(t -> t.disable())
+      .authorizeHttpRequests(t -> {
+        t
+          .requestMatchers("/user/**").permitAll()
+          .anyRequest().authenticated();
+      })
       .formLogin(t -> {
-        t.successHandler((request, response, authentication) -> {
+        t
+          .successHandler((request, response, authentication) -> {
           System.out.println(authentication.getPrincipal());
           response.sendRedirect("/");
         });
