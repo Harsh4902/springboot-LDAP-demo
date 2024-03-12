@@ -1,6 +1,6 @@
 package com.example.ldap.controller;
 
-import com.example.ldap.LdapUser;
+import com.example.ldap.entity.LdapUser;
 import com.example.ldap.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

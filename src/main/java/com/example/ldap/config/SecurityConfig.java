@@ -1,5 +1,8 @@
 package com.example.ldap.config;
 
+import com.example.ldap.entity.DBUser;
+import com.example.ldap.entity.DBUserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.ContextSource;
@@ -15,35 +18,39 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.ldap.server.UnboundIdContainer;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-//  @Bean
-//  public EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean() {
-//    EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean =
-//      EmbeddedLdapServerContextSourceFactoryBean.fromEmbeddedLdapServer();
-//    contextSourceFactoryBean.setPort(0);
-//    return contextSourceFactoryBean;
-//  }
+  @Autowired
+  private DBUserRepository dbUserRepository;
 
   @Bean
-  public ContextSource contextSource(){
-    LdapContextSource ldapContextSource = new LdapContextSource() ;
-    ldapContextSource.setUrl("ldap://192.168.12.55:389");
-    ldapContextSource.setBase("dc=example,dc=com");
-    ldapContextSource.setUserDn("cn=admin,dc=example,dc=com");
-    ldapContextSource.setPassword("sttl@321");
-    return ldapContextSource;
+  public EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean() {
+    EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean =
+      EmbeddedLdapServerContextSourceFactoryBean.fromEmbeddedLdapServer();
+    contextSourceFactoryBean.setPort(0);
+    return contextSourceFactoryBean;
   }
 
 //  @Bean
-//  UnboundIdContainer ldapContainer() {
-//    return new UnboundIdContainer("dc=springframework,dc=org",
-//      "classpath:users.ldif");
+//  public ContextSource contextSource(){
+//    LdapContextSource ldapContextSource = new LdapContextSource() ;
+//    ldapContextSource.setUrl("ldap://192.168.12.55:389");
+//    ldapContextSource.setBase("dc=example,dc=com");
+//    ldapContextSource.setUserDn("cn=admin,dc=example,dc=com");
+//    ldapContextSource.setPassword("sttl@321");
+//    return ldapContextSource;
 //  }
+
+  @Bean
+  UnboundIdContainer ldapContainer() {
+    return new UnboundIdContainer("dc=springframework,dc=org",
+      "classpath:users.ldif");
+  }
 
   @Bean
   LdapAuthoritiesPopulator authorities(BaseLdapPathContextSource contextSource) {
@@ -58,7 +65,7 @@ public class SecurityConfig {
   AuthenticationManager authenticationManager(BaseLdapPathContextSource contextSource,
                                               LdapAuthoritiesPopulator authorities) {
     LdapPasswordComparisonAuthenticationManagerFactory factory = new LdapPasswordComparisonAuthenticationManagerFactory(contextSource,new BCryptPasswordEncoder());
-    factory.setUserDnPatterns("uid={0}");
+    factory.setUserDnPatterns("uid={0},ou=people");
     factory.setPasswordAttribute("userPassword");
     return factory.createAuthenticationManager();
   }
@@ -77,6 +84,13 @@ public class SecurityConfig {
         t
           .successHandler((request, response, authentication) -> {
           System.out.println(authentication.getPrincipal());
+          LdapUserDetailsImpl ldapUserDetails =(LdapUserDetailsImpl) authentication.getPrincipal();
+          String uid = ldapUserDetails.getDn().split(",")[0].split("=")[1];
+          if(dbUserRepository.findByUid(uid) == null){
+            DBUser user = new DBUser();
+            user.setUid(uid);
+            dbUserRepository.save(user);
+          }
           response.sendRedirect("/");
         });
       });

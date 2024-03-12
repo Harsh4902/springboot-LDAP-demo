@@ -1,4 +1,4 @@
-package com.example.ldap;
+package com.example.ldap.entity;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
