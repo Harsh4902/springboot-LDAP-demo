@@ -27,4 +27,9 @@ public class UserController {
     return new ResponseEntity<>(userService.getAllUsers(),HttpStatus.OK);
   }
 
+  @GetMapping
+  public String hello(){
+    return "Hello User";
+  }
+
 }
