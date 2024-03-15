@@ -6,8 +6,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -15,16 +17,19 @@ public class SecurityConfig {
 
   @Autowired
   private CustomAuthenticationFilter customAuthenticationFilter;
-
+  
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
     httpSecurity
       .csrf(AbstractHttpConfigurer::disable)
       .authorizeHttpRequests(t -> {
-        t.anyRequest().authenticated();
+        t
+          .requestMatchers("/login").permitAll()
+          .anyRequest().authenticated();
       })
-      .addFilterAt(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class );
+      .addFilterAt(customAuthenticationFilter, BasicAuthenticationFilter.class )
+      .sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
     return httpSecurity.build();
   }

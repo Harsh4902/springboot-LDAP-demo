@@ -22,8 +22,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     if(dbUserRepository.findByUid(uid) == null){
       throw new BadCredentialsException("No such user is present in Database.....!");
     }
-
-    return new CustomAuthentication(true,null);
+    return new CustomAuthentication(true,uid);
   }
 
   @Override
