@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
@@ -24,9 +23,7 @@ public class SecurityConfig {
     httpSecurity
       .csrf(AbstractHttpConfigurer::disable)
       .authorizeHttpRequests(t -> {
-        t
-          .requestMatchers("/login").permitAll()
-          .anyRequest().authenticated();
+        t.anyRequest().authenticated();
       })
       .addFilterAt(customAuthenticationFilter, BasicAuthenticationFilter.class )
       .sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
