@@ -1,4 +1,4 @@
-* Basic Url configuration for LDAP server connection
+* Basic Url configuration for LDAP server connection:
 ```
 spring.ldap.url=ldap://192.168.12.55:389
 spring.ldap.base=dc=example,dc=org
@@ -6,7 +6,7 @@ spring.ldap.username=admin
 spring.ldap.password=sttl@321
 spring.ldap.embedded.validation.enabled=false
 ```
-* ContextSource bean for which is configured to make LDAP connection for any Search/Add/Remove Request
+* ContextSource bean for which is configured to make LDAP connection for any Search/Add/Remove Request:
 ```
 @Bean
 public ContextSource contextSource(){
@@ -18,7 +18,7 @@ public ContextSource contextSource(){
   return ldapContextSource;
 }
 ```
-* AuthenticationManager which will help to make authentication through LDAP server
+* AuthenticationManager which will help to make authentication through LDAP server:
 ```
 @Bean
 AuthenticationManager authenticationManager(BaseLdapPathContextSource contextSource,
